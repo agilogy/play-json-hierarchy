@@ -1,17 +1,18 @@
 package com.agilogy.play.hierarchy
 
+import com.agilogy.play.hierarchy.HierarchyWrites.SubclassWrites
 import play.api.libs.json._
 
 import scala.reflect.ClassTag
 
 object HierarchyFormat {
 
-  case class Discriminator[RT, DT](format: OFormat[DT], f: RT => DT) {
+  class Discriminator[RT, DT](val format: OFormat[DT], f: RT => DT) extends HierarchyWrites.Discriminator[RT, DT](format, f) {
     def reads(json: JsValue): JsResult[DT] = format.reads(json)
-    def writes(obj: RT): JsObject = format.writes(f(obj))
   }
 
   object Discriminator {
+    def apply[RT, DT](format: OFormat[DT], f: RT => DT): Discriminator[RT, DT] = new Discriminator[RT, DT](format, f)
     def default[RT](discriminatorAttribute: String = "$type"): Discriminator[RT, String] =
       new Discriminator[RT, String]((JsPath \ discriminatorAttribute).format[String], _.getClass.getSimpleName)
     def discriminator[RT, DT: Format](f: RT => DT, attributeName: String = "type"): Discriminator[RT, DT] =
@@ -26,8 +27,11 @@ object HierarchyFormat {
     }
   }
 
-  def format[RT, DT](subtypesFormats: SubclassFormat[DT, _ <: RT]*)(implicit discriminator: Discriminator[RT, DT] = Discriminator.default[RT]()): OFormat[RT] =
-    new OFormat[RT] {
+  def format[RT, DT](subtypesFormats: SubclassFormat[DT, _ <: RT]*)(implicit discriminator: Discriminator[RT, DT] = Discriminator.default[RT]()): OFormat[RT] = {
+
+    val writes = HierarchyWrites.writes[RT, DT](subtypesFormats: _*)
+
+    val reads = new Reads[RT] {
       override def reads(json: JsValue): JsResult[RT] = {
         val result = for {
           d <- discriminator.format.reads(json)
@@ -40,27 +44,19 @@ object HierarchyFormat {
           case e => e
         }
       }
-
-      override def writes(o: RT): JsObject = {
-        val jsonDiscriminator = discriminator.writes(o)
-        val discriminatorValue = discriminator.f(o)
-        val subtypeFormat = subtypesFormats.find(_.discriminatorValue == discriminatorValue)
-          .getOrElse(throw new IllegalArgumentException(s"Couldn't find a subtype format for discriminator value $discriminatorValue"))
-        val jsonObject = subtypeFormat.write(o)
-        jsonObject ++ jsonDiscriminator
-      }
     }
+
+    OFormat[RT](reads, writes)
+  }
 
   implicit class SubclassDefaultFormat[RT](format: Format[RT])(implicit classTag: ClassTag[RT])
     extends SubclassFormat[String, RT](classTag.runtimeClass.getSimpleName -> format)
 
-  implicit class SubclassFormat[DT, RT](value: (DT, Format[RT])) {
-    val discriminatorValue = value._1
+  implicit class SubclassFormat[DT, RT](value: (DT, Format[RT])) extends SubclassWrites[DT, RT](value) {
     require(value._2.isInstanceOf[OFormat[RT]])
     private val format = value._2.asInstanceOf[OFormat[RT]]
 
     def reads(json: JsValue): JsResult[RT] = format.reads(json)
-    def write(o: Any): JsObject = format.writes(o.asInstanceOf[RT])
 
   }
 }
