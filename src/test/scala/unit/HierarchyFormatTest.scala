@@ -91,6 +91,16 @@ class HierarchyFormatTest extends FunSpec {
 
   describe("customized, compound discriminator hierarchy format") {
 
+    // play-json 2.6 does not implement Reads[Option[A]]. Source: https://github.com/playframework/playframework/issues/4211
+    implicit def optionFormat[A: Format]: Format[Option[A]] = new Format[Option[A]] {
+      override def reads(json: JsValue): JsResult[Option[A]] = json.validateOpt[A]
+
+      override def writes(o: Option[A]): JsValue = o match {
+        case Some(t) ⇒ implicitly[Writes[A]].writes(t)
+        case None ⇒ JsNull
+      }
+    }
+
     val fmt = HierarchyFormat.format((4 -> Option("Rectangle")) -> rectangleFmt, (4 -> Option("Square")) -> squareFmt, (3 -> Option.empty[String]) -> triangleFmt)(
       Discriminator.discriminator("numberOfSides", _.numberOfSides, "form", form)
     )
