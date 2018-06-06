@@ -7,9 +7,9 @@ organization := "com.agilogy"
 
 name := "play-json-hierarchy"
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.12.6"
 
-crossScalaVersions := Seq("2.10.4","2.11.6", "2.12.6")
+crossScalaVersions := Seq("2.10.7","2.11.12","2.12.6")
 
 resolvers += Resolver.url("Agilogy Scala",url("http://dl.bintray.com/agilogy/scala/"))(Resolver.ivyStylePatterns)
 
