@@ -1,6 +1,7 @@
 import bintray.Keys._
 import com.typesafe.sbt.GitPlugin.autoImport._
 import com.typesafe.sbt.GitVersioning
+import scoverage.ScoverageKeys
 
 organization := "com.agilogy"
 
@@ -8,13 +9,13 @@ name := "play-json-hierarchy"
 
 scalaVersion := "2.11.6"
 
-crossScalaVersions := Seq("2.10.4","2.11.6")
+crossScalaVersions := Seq("2.10.4","2.11.6", "2.12.6")
 
 resolvers += Resolver.url("Agilogy Scala",url("http://dl.bintray.com/agilogy/scala/"))(Resolver.ivyStylePatterns)
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play-json" % "2.3.9",
-  "org.scalatest" %% "scalatest" % "2.2.4" % "test"
+  "com.typesafe.play" %% "play-json" % "2.6.7",
+  "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 )
 
 // --> Linters
@@ -69,7 +70,7 @@ scalacOptions in Compile := (scalacOptions in Compile).value filterNot { switch 
 
 resolvers += "Linter Repository" at "https://hairyfotr.github.io/linteRepo/releases"
 
-addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.12")
+addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.17")
 
 scalastyleFailOnError := true
 
@@ -79,9 +80,9 @@ scalastyleFailOnError := true
 // See https://github.com/sbt/sbt-scalariform
 scalariformSettings
 
-ScoverageSbtPlugin.ScoverageKeys.coverageExcludedPackages := "<empty>"
+ScoverageKeys.coverageExcludedPackages := "<empty>"
 
-ScoverageSbtPlugin.ScoverageKeys.coverageHighlighting := false
+ScoverageKeys.coverageHighlighting := false
 
 // --> bintray
 
