@@ -5,7 +5,7 @@
 ```
 resolvers += "Agilogy GitLab" at "https://gitlab.com/api/v4/groups/583742/-/packages/maven"
 
-libraryDependencies += "com.agilogy" %% "play-json-hierarchy" % "0.2"
+libraryDependencies += "com.agilogy" %% "play-json-hierarchy" % "0.3"
 ```
 
 ## Publishing
