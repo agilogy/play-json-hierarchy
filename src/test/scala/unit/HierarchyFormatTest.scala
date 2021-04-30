@@ -1,7 +1,5 @@
 package unit
 
-import javafx.scene.shape.Circle
-
 import com.agilogy.play.hierarchy.HierarchyFormat
 import com.agilogy.play.hierarchy.HierarchyFormat.Discriminator
 import org.scalatest.{ FunSpec, FlatSpec }
@@ -102,8 +100,7 @@ class HierarchyFormatTest extends FunSpec {
     }
 
     val fmt = HierarchyFormat.format((4 -> Option("Rectangle")) -> rectangleFmt, (4 -> Option("Square")) -> squareFmt, (3 -> Option.empty[String]) -> triangleFmt)(
-      Discriminator.discriminator("numberOfSides", _.numberOfSides, "form", form)
-    )
+      Discriminator.discriminator("numberOfSides", _.numberOfSides, "form", form))
 
     it("should write to json") {
       assert(fmt.writes(triangle233) === Json.obj("numberOfSides" -> 3, "form" -> JsNull, "side1Length" -> 2, "side2Length" -> 3, "side3Length" -> 3))
@@ -124,12 +121,10 @@ class HierarchyFormatTest extends FunSpec {
 
     val discriminatorFmt: OFormat[(Int, Option[String])] = (
       (__ \ "sides").format[Int] and
-      (__ \ "form").formatNullable[String]
-    )({ case (s, f) => s -> f }, identity)
+      (__ \ "form").formatNullable[String])({ case (s, f) => s -> f }, identity)
 
     val fmt = HierarchyFormat.format((4 -> Option("Rectangle")) -> rectangleFmt, (4 -> Option("Square")) -> squareFmt, (3 -> Option.empty[String]) -> triangleFmt)(
-      Discriminator[GeometricShape, (Int, Option[String])](discriminatorFmt, s => s.numberOfSides -> form(s))
-    )
+      Discriminator[GeometricShape, (Int, Option[String])](discriminatorFmt, s => s.numberOfSides -> form(s)))
 
     it("should write to json") {
       assert(fmt.writes(triangle233) === Json.obj("sides" -> 3, "side1Length" -> 2, "side2Length" -> 3, "side3Length" -> 3))

@@ -1,17 +1,15 @@
-import bintray.Keys._
 import com.typesafe.sbt.GitPlugin.autoImport._
 import com.typesafe.sbt.GitVersioning
 import scoverage.ScoverageKeys
+import com.gilcloud.sbt.gitlab.{GitlabCredentials,GitlabPlugin}
 
 organization := "com.agilogy"
 
 name := "play-json-hierarchy"
 
-scalaVersion := "2.12.6"
+scalaVersion := "2.12.13"
 
-crossScalaVersions := Seq("2.10.7","2.11.12","2.12.6")
-
-resolvers += Resolver.url("Agilogy Scala",url("http://dl.bintray.com/agilogy/scala/"))(Resolver.ivyStylePatterns)
+crossScalaVersions := Seq("2.11.12","2.12.13")
 
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-json" % "2.6.7",
@@ -78,36 +76,29 @@ scalastyleFailOnError := true
 
 // Reformat at every compile.
 // See https://github.com/sbt/sbt-scalariform
-scalariformSettings
 
 ScoverageKeys.coverageExcludedPackages := "<empty>"
 
 ScoverageKeys.coverageHighlighting := false
 
-// --> bintray
+// --> gitlab
 
-seq(bintrayPublishSettings:_*)
+GitlabPlugin.autoImport.gitlabGroupId := None
+GitlabPlugin.autoImport.gitlabProjectId := Some(26236490)
+GitlabPlugin.autoImport.gitlabDomain := "gitlab.com"
 
-repository in bintray := "scala"
+GitlabPlugin.autoImport.gitlabCredentials := {
+    val token = sys.env.get("GITLAB_DEPLOY_TOKEN") match {
+        case Some(token) => token
+        case None =>
+            sLog.value.warn(s"Environment variable GITLAB_DEPLOY_TOKEN is undefined, 'publish' will fail.")
+            ""
+    }
+    Some(GitlabCredentials("Deploy-Token", token))
+}
 
-bintrayOrganization in bintray := Some("agilogy")
-
-packageLabels in bintray := Seq("scala")
-
-licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))
-
-// <-- bintray
+// <-- gitlab
 
 enablePlugins(GitVersioning)
 
 git.useGitDescribe := true
-
-resolvers += "Agilogy snapshots" at "http://188.166.95.201:8081/content/groups/public"
-
-publishMavenStyle := isSnapshot.value
-
-publishTo := {
-  val nexus = "http://188.166.95.201:8081/content/repositories/snapshots"
-  if (isSnapshot.value) Some("snapshots"  at nexus)
-  else publishTo.value
-}
