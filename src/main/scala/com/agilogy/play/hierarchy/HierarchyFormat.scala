@@ -21,8 +21,7 @@ object HierarchyFormat {
       import play.api.libs.functional.syntax._
       val format: OFormat[(DT1, DT2)] = (
         (__ \ attributeName1).format[DT1] and
-        (__ \ attributeName2).format[DT2]
-      )((s, i) => (s, i), identity)
+        (__ \ attributeName2).format[DT2])((s, i) => (s, i), identity)
       new Discriminator[RT, (DT1, DT2)](format, v => f1(v) -> f2(v))
     }
   }
