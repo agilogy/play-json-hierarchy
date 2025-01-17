@@ -20,8 +20,7 @@ object HierarchyWrites {
       import play.api.libs.functional.syntax._
       val w: OWrites[(DT1, DT2)] = (
         (__ \ attributeName1).write[DT1] and
-        (__ \ attributeName2).write[DT2]
-      )(a => a._1 -> a._2)
+        (__ \ attributeName2).write[DT2])(a => a._1 -> a._2)
       new Discriminator[RT, (DT1, DT2)](w, v => f1(v) -> f2(v))
     }
   }
